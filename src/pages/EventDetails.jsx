@@ -43,6 +43,7 @@ function EventDetails() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!id || id === 'undefined') { navigate('/home'); return; }
     if (!localStorage.getItem('token')) { navigate('/login'); return; }
@@ -99,7 +100,6 @@ function EventDetails() {
           alt={event.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(45,31,31,0.88) 0%, rgba(45,31,31,0.3) 60%, transparent 100%)' }} />
 
-        {/* Hero flower accents */}
         {['🌸','🌺','🌼','🌷'].map((f, i) => (
           <span key={i} style={{
             position: 'absolute', fontSize: '1.2rem', opacity: 0.3,
@@ -123,15 +123,12 @@ function EventDetails() {
 
         {/* Left */}
         <div>
-          {/* About */}
           <div style={{ background: 'white', borderRadius: '20px', padding: '1.8rem', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(201,169,154,0.1)', border: '1px solid #f5e8e3', position: 'relative', overflow: 'hidden' }}>
-            {/* Corner flower */}
             <div style={{ position: 'absolute', top: '10px', right: '14px', fontSize: '1.4rem', opacity: 0.15, pointerEvents: 'none' }}>🌸</div>
             <h2 style={{ color: '#2d1f1f', fontWeight: '700', marginBottom: '1rem', fontFamily: "'Cormorant Garamond', serif", fontSize: '1.3rem' }}>About This Event</h2>
-            <p style={{ color: '#6b5a55', lineHeight: '1.8', fontSize: '0.9rem' }}>{event.description || 'Join us for an amazing experience you will never forget! This event promises to be a memorable occasion filled with excitement and joy.'}</p>
+            <p style={{ color: '#6b5a55', lineHeight: '1.8', fontSize: '0.9rem' }}>{event.description || 'Join us for an amazing experience you will never forget!'}</p>
           </div>
 
-          {/* Details grid */}
           <div style={{ background: 'white', borderRadius: '20px', padding: '1.8rem', boxShadow: '0 4px 20px rgba(201,169,154,0.1)', border: '1px solid #f5e8e3', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: '10px', right: '14px', fontSize: '1.4rem', opacity: 0.15, pointerEvents: 'none' }}>🌺</div>
             <h2 style={{ color: '#2d1f1f', fontWeight: '700', marginBottom: '1.2rem', fontFamily: "'Cormorant Garamond', serif", fontSize: '1.3rem' }}>Event Details</h2>
@@ -158,7 +155,6 @@ function EventDetails() {
 
         {/* Right — Booking Card */}
         <div style={{ background: 'white', borderRadius: '20px', padding: '1.8rem', boxShadow: '0 8px 30px rgba(201,169,154,0.2)', border: '1px solid #f5e8e3', position: 'sticky', top: '90px', overflow: 'hidden' }}>
-          {/* Flower decorations on card */}
           <div style={{ position: 'absolute', top: '10px', right: '14px', fontSize: '1.6rem', opacity: 0.15, pointerEvents: 'none' }}>🌸</div>
           <div style={{ position: 'absolute', bottom: '10px', left: '14px', fontSize: '1.2rem', opacity: 0.12, pointerEvents: 'none' }}>🌺</div>
 
@@ -172,7 +168,6 @@ function EventDetails() {
 
           {event.availableSeats > 0 ? (
             <>
-              {/* Ticket counter */}
               <div style={{ marginBottom: '1.2rem' }}>
                 <p style={{ color: '#6b5a55', fontSize: '0.82rem', fontWeight: '600', marginBottom: '10px' }}>Select Tickets 🎟️</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#fdf6f3', borderRadius: '14px', padding: '10px 16px', border: '1px solid #f5e8e3', justifyContent: 'space-between' }}>
@@ -185,7 +180,6 @@ function EventDetails() {
                 </div>
               </div>
 
-              {/* Price breakdown */}
               <div style={{ background: '#fdf6f3', borderRadius: '14px', padding: '1rem', marginBottom: '1.2rem', border: '1px solid #f5e8e3' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', color: '#a08880', fontSize: '0.82rem', marginBottom: '6px' }}>
                   <span>₹{event.price} × {tickets}</span><span>₹{event.price * tickets}</span>
@@ -222,4 +216,5 @@ function EventDetails() {
     </div>
   );
 }
+
 export default EventDetails;
