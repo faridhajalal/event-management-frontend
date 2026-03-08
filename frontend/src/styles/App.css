@@ -1,0 +1,141 @@
+/* src/styles/App.css */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f6fa;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  color: #2f3640;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+th {
+  background-color: #00a8ff;
+  color: #fff;
+}
+
+tr:nth-child(even) {
+  background-color: #f4f4f4;
+}
+
+.loading-text {
+  font-size: 16px;
+  text-align: center;
+  margin-top: 50px;
+  color: #555;
+}
+
+p {
+  color: #555;
+  font-size: 15px;
+}
+/* App.css */
+
+/* General reset */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f2f5;
+  height: 100%;
+}
+
+/* Center the login container */
+.login-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 30px;
+  background: #fff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  margin: 80px auto; /* centers horizontally */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Heading */
+.login-container h2 {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+/* Input fields */
+.login-container input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.login-container input:focus {
+  border-color: #007bff;
+}
+
+/* Submit button */
+.login-container button {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-container button:hover {
+  background: #0056b3;
+}
+
+/* Links section */
+.login-container .links {
+  margin-top: 15px;
+}
+
+.login-container .links a {
+  text-decoration: none;
+  color: #007bff;
+  transition: 0.3s;
+}
+
+.login-container .links a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Error message */
+.login-container .error {
+  color: #ff4d4f;
+  margin-bottom: 20px;
+  font-weight: bold;
+  text-align: center;
+}
