@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'https://eventhub-backend-o5w.onrender.com/api';
-
 const API = axios.create({
-  baseURL: BASE_URL
+  baseURL: 'http://localhost:5000/api'
 });
 
 API.interceptors.request.use((config) => {

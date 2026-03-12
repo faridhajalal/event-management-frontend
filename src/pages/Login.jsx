@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_API_URL || 'https://eventhub-backend-o5w4.onrender.com/api';
+import API from '../services/axios';
 
 const FLOWER_CSS = `
   @keyframes floatA { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-14px) rotate(12deg)} }
@@ -44,8 +42,7 @@ function Login() {
     setLoading(true);
     setError('');
     try {
-      
-      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const response = await API.post('/auth/login', { email, password });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       if (response.data.user.role === 'admin') navigate('/admin');

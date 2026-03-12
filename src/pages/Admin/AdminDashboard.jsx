@@ -6,27 +6,21 @@ const CSS = `
   @keyframes growUp { from{height:0} to{height:var(--h)} }
 `;
 
-// ── Bar Chart (Revenue) ──────────────────────────────────────────
 function BarChart({ monthlyData }) {
   const entries = Object.entries(monthlyData);
   const max = Math.max(...entries.map(([,v]) => v), 1);
   const COLORS = ['#f093fb','#4facfe','#43e97b','#f6d365','#c9a99a','#fa709a'];
-
   return (
     <div>
       <div style={{ display:'flex', alignItems:'flex-end', gap:'14px', height:'220px', padding:'0 10px 0 40px', position:'relative' }}>
-        {/* Y axis labels */}
         {[0,25,50,75,100].map(pct => (
           <div key={pct} style={{ position:'absolute', left:0, bottom:`${pct}%`, fontSize:'0.62rem', color:'#ccc', fontWeight:'600', transform:'translateY(50%)' }}>
             ₹{((max * pct / 100)/1000).toFixed(0)}k
           </div>
         ))}
-        {/* Grid lines */}
         {[25,50,75,100].map(pct => (
           <div key={pct} style={{ position:'absolute', left:'40px', right:0, bottom:`${pct}%`, height:'1px', background:'#f0f0f0' }} />
         ))}
-
-        {/* Bars */}
         {entries.map(([month, val], i) => {
           const pct = (val / max) * 100;
           const isThis = i === entries.length - 1;
@@ -35,13 +29,7 @@ function BarChart({ monthlyData }) {
               <span style={{ color:'#2d1f1f', fontSize:'0.65rem', fontWeight:'700' }}>
                 {val > 0 ? `₹${val > 999 ? (val/1000).toFixed(0)+'k' : val}` : ''}
               </span>
-              <div style={{
-                width:'100%', borderRadius:'8px 8px 0 0',
-                background: isThis ? `linear-gradient(180deg,${COLORS[i]},${COLORS[i]}cc)` : `linear-gradient(180deg,#e0e0e0,#d0d0d0)`,
-                height:`${Math.max(pct, 2)}%`,
-                boxShadow: isThis ? `0 -4px 14px ${COLORS[i]}60` : 'none',
-                transition:'height 1s ease',
-              }} />
+              <div style={{ width:'100%', borderRadius:'8px 8px 0 0', background: isThis ? `linear-gradient(180deg,${COLORS[i]},${COLORS[i]}cc)` : `linear-gradient(180deg,#e0e0e0,#d0d0d0)`, height:`${Math.max(pct, 2)}%`, boxShadow: isThis ? `0 -4px 14px ${COLORS[i]}60` : 'none', transition:'height 1s ease' }} />
               <span style={{ color: isThis ? COLORS[i] : '#aaa', fontSize:'0.68rem', fontWeight: isThis ? '800' : '500' }}>{month}</span>
             </div>
           );
@@ -51,35 +39,27 @@ function BarChart({ monthlyData }) {
   );
 }
 
-// ── Line/Area Chart (P&L) ────────────────────────────────────────
 function PLChart({ monthlyData }) {
   const entries = Object.entries(monthlyData);
   const revenues = entries.map(([,v]) => v);
   const profits  = revenues.map(v => v * 0.70);
   const costs    = revenues.map(v => v * 0.30);
   const max      = Math.max(...revenues, 1);
-
-  const W = 500;
-  const H = 180;
+  const W = 500; const H = 180;
   const pad = { top: 20, right: 20, bottom: 30, left: 50 };
   const chartW = W - pad.left - pad.right;
   const chartH = H - pad.top - pad.bottom;
-
   const toX = i => pad.left + (i / (entries.length - 1)) * chartW;
   const toY = v => pad.top + chartH - (v / max) * chartH;
-
   const line = arr => arr.map((v,i) => `${i===0?'M':'L'}${toX(i)},${toY(v)}`).join(' ');
   const area = arr => `${line(arr)} L${toX(arr.length-1)},${pad.top+chartH} L${toX(0)},${pad.top+chartH} Z`;
-
   const LINES = [
-    { values: revenues, color: '#c9a99a', label: 'Revenue',  fill: '#c9a99a20' },
-    { values: profits,  color: '#4caf50', label: 'Profit',   fill: '#4caf5020' },
-    { values: costs,    color: '#f44336', label: 'Cost',     fill: '#f4433620' },
+    { values: revenues, color: '#c9a99a', label: 'Revenue', fill: '#c9a99a20' },
+    { values: profits,  color: '#4caf50', label: 'Profit',  fill: '#4caf5020' },
+    { values: costs,    color: '#f44336', label: 'Cost',    fill: '#f4433620' },
   ];
-
   return (
     <div>
-      {/* Legend */}
       <div style={{ display:'flex', gap:'20px', marginBottom:'1rem', flexWrap:'wrap' }}>
         {LINES.map(l => (
           <div key={l.label} style={{ display:'flex', alignItems:'center', gap:'6px' }}>
@@ -88,100 +68,54 @@ function PLChart({ monthlyData }) {
           </div>
         ))}
       </div>
-
-      {/* SVG Chart */}
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width:'100%', height:'auto', overflow:'visible' }}>
-        {/* Grid lines */}
         {[0,25,50,75,100].map(pct => {
           const y = pad.top + chartH - (pct/100)*chartH;
           return (
             <g key={pct}>
               <line x1={pad.left} y1={y} x2={W-pad.right} y2={y} stroke="#f0f0f0" strokeWidth="1" />
-              <text x={pad.left-6} y={y+4} textAnchor="end" fontSize="9" fill="#ccc">
-                ₹{((max*pct/100)/1000).toFixed(0)}k
-              </text>
+              <text x={pad.left-6} y={y+4} textAnchor="end" fontSize="9" fill="#ccc">₹{((max*pct/100)/1000).toFixed(0)}k</text>
             </g>
           );
         })}
-
-        {/* X axis labels */}
         {entries.map(([month,], i) => (
-          <text key={month} x={toX(i)} y={H-4} textAnchor="middle" fontSize="9" fill="#aaa" fontWeight="500">
-            {month}
-          </text>
+          <text key={month} x={toX(i)} y={H-4} textAnchor="middle" fontSize="9" fill="#aaa" fontWeight="500">{month}</text>
         ))}
-
-        {/* Area fills */}
-        {LINES.map(l => (
-          <path key={l.label+'-area'} d={area(l.values)} fill={l.fill} />
-        ))}
-
-        {/* Lines */}
-        {LINES.map(l => (
-          <path key={l.label} d={line(l.values)} fill="none" stroke={l.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        ))}
-
-        {/* Dots */}
-        {LINES.map(l => l.values.map((v,i) => (
-          <circle key={`${l.label}-${i}`} cx={toX(i)} cy={toY(v)} r="4" fill={l.color} stroke="white" strokeWidth="2" />
-        )))}
+        {LINES.map(l => <path key={l.label+'-area'} d={area(l.values)} fill={l.fill} />)}
+        {LINES.map(l => <path key={l.label} d={line(l.values)} fill="none" stroke={l.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />)}
+        {LINES.map(l => l.values.map((v,i) => <circle key={`${l.label}-${i}`} cx={toX(i)} cy={toY(v)} r="4" fill={l.color} stroke="white" strokeWidth="2" />))}
       </svg>
     </div>
   );
 }
 
-// ── Target Gauge ─────────────────────────────────────────────────
 function TargetGauge({ current, target }) {
   const pct = Math.min((current / target) * 100, 100);
   const remaining = Math.max(target - current, 0);
-
-  // Semicircle gauge
-  const R = 80;
-  const cx = 110;
-  const cy = 100;
-  const circumference = Math.PI * R; // half circle
+  const R = 80; const cx = 110; const cy = 100;
+  const circumference = Math.PI * R;
   const progress = (pct / 100) * circumference;
-
   const color = pct >= 100 ? '#4caf50' : pct >= 75 ? '#ff9800' : pct >= 50 ? '#c9a99a' : '#f44336';
-
   return (
     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'1rem' }}>
-      {/* Gauge */}
-      <div style={{ position:'relative' }}>
-        <svg width="220" height="120" viewBox="0 0 220 120">
-          {/* Background arc */}
-          <path
-            d={`M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${cx+R} ${cy}`}
-            fill="none" stroke="#f0ddd7" strokeWidth="20" strokeLinecap="round"
-          />
-          {/* Progress arc */}
-          <path
-            d={`M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${cx+R} ${cy}`}
-            fill="none" stroke={color} strokeWidth="20" strokeLinecap="round"
-            strokeDasharray={`${progress} ${circumference}`}
-            style={{ transition:'stroke-dasharray 1.5s ease' }}
-          />
-          {/* Center text */}
-          <text x={cx} y={cy-10} textAnchor="middle" fontSize="28" fontWeight="900" fill="#2d1f1f" fontFamily="Cormorant Garamond, serif">{pct.toFixed(0)}%</text>
-          <text x={cx} y={cy+12} textAnchor="middle" fontSize="10" fill="#a08880" fontWeight="600">{pct >= 100 ? '🎉 Target Met!' : 'of target'}</text>
-        </svg>
-      </div>
-
-      {/* Stats */}
+      <svg width="220" height="120" viewBox="0 0 220 120">
+        <path d={`M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${cx+R} ${cy}`} fill="none" stroke="#f0ddd7" strokeWidth="20" strokeLinecap="round" />
+        <path d={`M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${cx+R} ${cy}`} fill="none" stroke={color} strokeWidth="20" strokeLinecap="round" strokeDasharray={`${progress} ${circumference}`} style={{ transition:'stroke-dasharray 1.5s ease' }} />
+        <text x={cx} y={cy-10} textAnchor="middle" fontSize="28" fontWeight="900" fill="#2d1f1f" fontFamily="Cormorant Garamond, serif">{pct.toFixed(0)}%</text>
+        <text x={cx} y={cy+12} textAnchor="middle" fontSize="10" fill="#a08880" fontWeight="600">{pct >= 100 ? '🎉 Target Met!' : 'of target'}</text>
+      </svg>
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'1rem', width:'100%' }}>
         {[
-          { label:'Target',   val:`₹${target.toLocaleString()}`,   color:'#2d1f1f' },
-          { label:'Achieved', val:`₹${current.toLocaleString()}`,  color },
-          { label:'Remaining',val:`₹${remaining.toLocaleString()}`,color:'#f44336' },
+          { label:'Target',    val:`₹${target.toLocaleString()}`,    color:'#2d1f1f' },
+          { label:'Achieved',  val:`₹${current.toLocaleString()}`,   color },
+          { label:'Remaining', val:`₹${remaining.toLocaleString()}`, color:'#f44336' },
         ].map((item,i) => (
           <div key={i} style={{ textAlign:'center', background:'#fdf8f6', borderRadius:'14px', padding:'12px 8px', border:'1px solid #f0ddd7' }}>
-            <p style={{ color:'#a08880', fontSize:'0.68rem', fontWeight:'700', textTransform:'uppercase', margin:'0 0 4px', letterSpacing:'0.5px' }}>{item.label}</p>
+            <p style={{ color:'#a08880', fontSize:'0.68rem', fontWeight:'700', textTransform:'uppercase', margin:'0 0 4px' }}>{item.label}</p>
             <p style={{ color:item.color, fontSize:'0.92rem', fontWeight:'800', margin:0 }}>{item.val}</p>
           </div>
         ))}
       </div>
-
-      {/* Progress bar */}
       <div style={{ width:'100%' }}>
         <div style={{ height:'10px', background:'#f0ddd7', borderRadius:'5px', overflow:'hidden' }}>
           <div style={{ height:'100%', width:`${pct}%`, background:`linear-gradient(90deg,${color},${color}cc)`, borderRadius:'5px', transition:'width 1.5s ease' }} />
@@ -191,7 +125,6 @@ function TargetGauge({ current, target }) {
   );
 }
 
-// ── Stat Card ────────────────────────────────────────────────────
 function StatCard({ icon, label, value, sub, color, trend }) {
   return (
     <div style={{ background:'white', borderRadius:'20px', padding:'1.6rem', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', border:'1px solid #f0ddd7', animation:'fadeIn 0.5s ease', position:'relative', overflow:'hidden' }}>
@@ -208,7 +141,6 @@ function StatCard({ icon, label, value, sub, color, trend }) {
   );
 }
 
-// ── Main ─────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const [data, setData]               = useState(null);
   const [loading, setLoading]         = useState(true);
@@ -223,7 +155,7 @@ export default function AdminDashboard() {
     try {
       const [eventsRes, bookingsRes] = await Promise.all([
         API.get('/events'),
-      API.get('/bookings/all'),
+        API.get('/bookings/all/bookings'),
       ]);
       const events   = eventsRes.data?.events   || eventsRes.data   || [];
       const bookings = bookingsRes.data?.bookings || bookingsRes.data || [];
@@ -250,14 +182,12 @@ export default function AdminDashboard() {
       const thisMonthRev    = monthlyData[thisMonthKey]||0;
       const lastMonthRev    = monthlyData[lastMonthKey]||0;
       const momGrowth       = lastMonthRev>0?(((thisMonthRev-lastMonthRev)/lastMonthRev)*100).toFixed(1):0;
-
       const thisMonthCost   = thisMonthRev*0.30;
       const thisMonthProfit = thisMonthRev-thisMonthCost;
       const totalCost       = totalRevenue*0.30;
       const totalProfit     = totalRevenue-totalCost;
       const TARGET_MONTHLY  = 50000;
       const targetAchieved  = Math.min((thisMonthRev/TARGET_MONTHLY)*100,100).toFixed(0);
-
       const catMap={};
       events.forEach(e=>{ catMap[e.category]=(catMap[e.category]||0)+1; });
 
@@ -301,8 +231,6 @@ export default function AdminDashboard() {
   return (
     <div style={{ fontFamily:"'DM Sans',sans-serif", padding:'2.5rem', background:'#fdf8f6', minHeight:'100vh', overflowY:'auto' }}>
       <style>{CSS}</style>
-
-      {/* Header */}
       <div style={{ marginBottom:'2.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'1rem' }}>
         <div>
           <h1 style={{ color:'#2d1f1f', fontWeight:'800', fontSize:'2.2rem', margin:'0 0 6px', fontFamily:"'Cormorant Garamond',serif" }}>📊 Admin Dashboard</h1>
@@ -311,28 +239,19 @@ export default function AdminDashboard() {
         <button onClick={fetchDashboard} style={{ background:'linear-gradient(135deg,#c9a99a,#b8887a)', color:'white', border:'none', padding:'10px 22px', borderRadius:'14px', cursor:'pointer', fontWeight:'700', fontSize:'0.86rem', boxShadow:'0 4px 14px rgba(201,169,154,0.4)' }}>🔄 Refresh</button>
       </div>
 
-      {/* Tabs */}
       <div style={{ display:'flex', gap:'10px', marginBottom:'2.5rem', flexWrap:'wrap' }}>
         {[
           {id:'overview',    label:'🏠 Overview'},
           {id:'revenue',     label:'💰 Revenue'},
           {id:'events',      label:'🎭 Events'},
-          {id:'suggestions', label:`💡 Ideas${pendingSug>0?` (${pendingSug})`:''}` },
+          {id:'suggestions', label:`💡 Ideas${pendingSug>0?` (${pendingSug})`:''}`},
         ].map(tab=>(
-          <button key={tab.id} onClick={()=>setActiveTab(tab.id)} style={{
-            padding:'10px 24px', borderRadius:'20px', border:'none', cursor:'pointer',
-            fontWeight:'700', fontSize:'0.86rem', transition:'all 0.2s ease',
-            background:activeTab===tab.id?'linear-gradient(135deg,#c9a99a,#b8887a)':'white',
-            color:activeTab===tab.id?'white':'#a08880',
-            boxShadow:activeTab===tab.id?'0 4px 14px rgba(201,169,154,0.4)':'0 2px 8px rgba(0,0,0,0.06)',
-          }}>{tab.label}</button>
+          <button key={tab.id} onClick={()=>setActiveTab(tab.id)} style={{ padding:'10px 24px', borderRadius:'20px', border:'none', cursor:'pointer', fontWeight:'700', fontSize:'0.86rem', transition:'all 0.2s ease', background:activeTab===tab.id?'linear-gradient(135deg,#c9a99a,#b8887a)':'white', color:activeTab===tab.id?'white':'#a08880', boxShadow:activeTab===tab.id?'0 4px 14px rgba(201,169,154,0.4)':'0 2px 8px rgba(0,0,0,0.06)' }}>{tab.label}</button>
         ))}
       </div>
 
-      {/* ══ OVERVIEW ══ */}
       {activeTab==='overview' && (
         <div>
-          {/* 3x2 Stat Cards */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'1.5rem', marginBottom:'3rem' }}>
             <StatCard icon="💰" label="Total Revenue"  value={`₹${data.totalRevenue.toLocaleString()}`}  sub={`${data.momGrowth>=0?'+':''}${data.momGrowth}% vs last month`} trend={data.momGrowth>=0?'up':'down'} color="#c9a99a" />
             <StatCard icon="🎫" label="Total Bookings" value={data.bookings.length}                      sub={`${data.confirmedBookings.length} confirmed`} trend="up" color="#9ab8c9" />
@@ -341,33 +260,19 @@ export default function AdminDashboard() {
             <StatCard icon="❌" label="Cancellations"  value={data.cancelledBookings.length}             sub={`${((data.cancelledBookings.length/Math.max(data.bookings.length,1))*100).toFixed(0)}% rate`} trend="down" color="#c9a9a9" />
             <StatCard icon="⏳" label="Pending"        value={data.pendingBookings.length}               sub="awaiting confirmation" color="#c9c9a9" />
           </div>
-
-          {/* 📊 Revenue Bar Chart */}
           <h2 style={{ color:'#2d1f1f', fontWeight:'700', fontSize:'1.2rem', margin:'0 0 1.5rem', fontFamily:"'Cormorant Garamond',serif" }}>📊 Monthly Revenue</h2>
-          <div style={{ background:'white', borderRadius:'24px', padding:'2.5rem', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f0ddd7', marginBottom:'3rem' }}>
-            <BarChart monthlyData={data.monthlyData} />
-          </div>
-
-          {/* 📈 P&L Line Chart */}
+          <div style={{ background:'white', borderRadius:'24px', padding:'2.5rem', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f0ddd7', marginBottom:'3rem' }}><BarChart monthlyData={data.monthlyData} /></div>
           <h2 style={{ color:'#2d1f1f', fontWeight:'700', fontSize:'1.2rem', margin:'0 0 1.5rem', fontFamily:"'Cormorant Garamond',serif" }}>📈 P&L Overview</h2>
-          <div style={{ background:'white', borderRadius:'24px', padding:'2.5rem', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f0ddd7', marginBottom:'3rem' }}>
-            <PLChart monthlyData={data.monthlyData} />
-          </div>
-
-          {/* 🎯 Monthly Target Gauge */}
+          <div style={{ background:'white', borderRadius:'24px', padding:'2.5rem', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f0ddd7', marginBottom:'3rem' }}><PLChart monthlyData={data.monthlyData} /></div>
           <h2 style={{ color:'#2d1f1f', fontWeight:'700', fontSize:'1.2rem', margin:'0 0 1.5rem', fontFamily:"'Cormorant Garamond',serif" }}>🎯 This Month Target</h2>
-          <div style={{ background:'white', borderRadius:'24px', padding:'2.5rem', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f0ddd7', marginBottom:'3rem' }}>
-            <TargetGauge current={data.thisMonthRev} target={data.TARGET_MONTHLY} />
-          </div>
-
-          {/* Overall P&L summary */}
+          <div style={{ background:'white', borderRadius:'24px', padding:'2.5rem', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f0ddd7', marginBottom:'3rem' }}><TargetGauge current={data.thisMonthRev} target={data.TARGET_MONTHLY} /></div>
           <h2 style={{ color:'#2d1f1f', fontWeight:'700', fontSize:'1.2rem', margin:'0 0 1.5rem', fontFamily:"'Cormorant Garamond',serif" }}>Overall P&L</h2>
           <div style={{ background:data.totalIsProfit?'linear-gradient(135deg,#edf7f0,#d4edda)':'linear-gradient(135deg,#fdeee9,#fad4cc)', borderRadius:'20px', padding:'2rem', border:`1px solid ${data.totalIsProfit?'#b8ddc8':'#f0c4b8'}`, marginBottom:'2rem' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'1.5rem' }}>
               <div style={{ display:'flex', gap:'3rem', flexWrap:'wrap' }}>
                 {[
-                  {k:'GROSS REVENUE',   v:`₹${data.totalRevenue.toLocaleString()}`,                                                                    c:'#2d1f1f'},
-                  {k:'TOTAL COST (30%)',v:`- ₹${Math.round(data.totalCost).toLocaleString()}`,                                                          c:'#c0392b'},
+                  {k:'GROSS REVENUE',    v:`₹${data.totalRevenue.toLocaleString()}`,                                                                     c:'#2d1f1f'},
+                  {k:'TOTAL COST (30%)', v:`- ₹${Math.round(data.totalCost).toLocaleString()}`,                                                           c:'#c0392b'},
                   {k:`NET ${data.totalIsProfit?'PROFIT':'LOSS'}`, v:`₹${Math.abs(Math.round(data.totalProfit)).toLocaleString()}`, c:data.totalIsProfit?'#2e7d52':'#c0392b'},
                 ].map(item=>(
                   <div key={item.k}>
@@ -382,14 +287,13 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ══ REVENUE ══ */}
       {activeTab==='revenue' && (
         <div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'1.5rem', marginBottom:'3rem' }}>
             {[
-              {label:'This Month Revenue', val:`₹${data.thisMonthRev.toLocaleString()}`,                                         color:'#b8887a', bg:'#fdf0eb'},
-              {label:data.isProfit?'Profit':'Loss', val:`₹${Math.round(Math.abs(data.thisMonthProfit)).toLocaleString()}`,        color:data.isProfit?'#2e7d52':'#c0392b', bg:data.isProfit?'#edf7f0':'#fdeee9'},
-              {label:'This Month Cost',    val:`₹${Math.round(data.thisMonthCost).toLocaleString()}`,                            color:'#8a7040', bg:'#fef9ec'},
+              {label:'This Month Revenue', val:`₹${data.thisMonthRev.toLocaleString()}`,                                          color:'#b8887a', bg:'#fdf0eb'},
+              {label:data.isProfit?'Profit':'Loss', val:`₹${Math.round(Math.abs(data.thisMonthProfit)).toLocaleString()}`,         color:data.isProfit?'#2e7d52':'#c0392b', bg:data.isProfit?'#edf7f0':'#fdeee9'},
+              {label:'This Month Cost',    val:`₹${Math.round(data.thisMonthCost).toLocaleString()}`,                             color:'#8a7040', bg:'#fef9ec'},
             ].map((item,i)=>(
               <div key={i} style={{ background:item.bg, borderRadius:'20px', padding:'1.8rem', border:'1px solid #f0ddd7', textAlign:'center' }}>
                 <p style={{ color:'#a08880', fontSize:'0.76rem', fontWeight:'700', margin:'0 0 12px', textTransform:'uppercase', letterSpacing:'0.5px' }}>{item.label}</p>
@@ -397,25 +301,16 @@ export default function AdminDashboard() {
               </div>
             ))}
           </div>
-
-          {/* Big Bar Chart */}
           <h2 style={{ color:'#2d1f1f', fontWeight:'700', fontSize:'1.2rem', margin:'0 0 1.5rem', fontFamily:"'Cormorant Garamond',serif" }}>📊 Revenue Chart</h2>
-          <div style={{ background:'white', borderRadius:'24px', padding:'2.5rem', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f0ddd7', marginBottom:'3rem' }}>
-            <BarChart monthlyData={data.monthlyData} />
-          </div>
-
-          {/* Big P&L Chart */}
+          <div style={{ background:'white', borderRadius:'24px', padding:'2.5rem', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f0ddd7', marginBottom:'3rem' }}><BarChart monthlyData={data.monthlyData} /></div>
           <h2 style={{ color:'#2d1f1f', fontWeight:'700', fontSize:'1.2rem', margin:'0 0 1.5rem', fontFamily:"'Cormorant Garamond',serif" }}>📈 P&L Chart</h2>
-          <div style={{ background:'white', borderRadius:'24px', padding:'2.5rem', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f0ddd7', marginBottom:'3rem' }}>
-            <PLChart monthlyData={data.monthlyData} />
-          </div>
-
+          <div style={{ background:'white', borderRadius:'24px', padding:'2.5rem', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f0ddd7', marginBottom:'3rem' }}><PLChart monthlyData={data.monthlyData} /></div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1.5rem', marginBottom:'2rem' }}>
             <div style={{ background:'white', borderRadius:'20px', padding:'2rem', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', border:'1px solid #f0ddd7' }}>
               <h3 style={{ color:'#2d1f1f', fontWeight:'700', marginBottom:'1.5rem', fontSize:'1.05rem' }}>💰 Overall Breakdown</h3>
               {[
-                {label:'Gross Revenue',     val:`₹${data.totalRevenue.toLocaleString()}`,                              color:'#2e7d52'},
-                {label:'Operational (30%)', val:`₹${Math.round(data.totalCost).toLocaleString()}`,                     color:'#c0392b'},
+                {label:'Gross Revenue',     val:`₹${data.totalRevenue.toLocaleString()}`,                               color:'#2e7d52'},
+                {label:'Operational (30%)', val:`₹${Math.round(data.totalCost).toLocaleString()}`,                      color:'#c0392b'},
                 {label:data.totalIsProfit?'Net Profit ✅':'Net Loss ❌', val:`₹${Math.abs(Math.round(data.totalProfit)).toLocaleString()}`, color:data.totalIsProfit?'#2e7d52':'#c0392b'},
               ].map((item,i)=>(
                 <div key={i} style={{ display:'flex', justifyContent:'space-between', padding:'16px 0', borderBottom:i<2?'1px solid #f0ddd7':'none' }}>
@@ -443,7 +338,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ══ EVENTS ══ */}
       {activeTab==='events' && (
         <div>
           <h2 style={{ color:'#2d1f1f', fontWeight:'700', fontSize:'1.2rem', margin:'0 0 1.5rem', fontFamily:"'Cormorant Garamond',serif" }}>🎭 Events by Category</h2>
@@ -463,7 +357,6 @@ export default function AdminDashboard() {
               );
             })}
           </div>
-
           <h2 style={{ color:'#2d1f1f', fontWeight:'700', fontSize:'1.2rem', margin:'0 0 1.5rem', fontFamily:"'Cormorant Garamond',serif" }}>🏆 All Events</h2>
           <div style={{ background:'white', borderRadius:'20px', padding:'2rem', boxShadow:'0 4px 20px rgba(0,0,0,0.06)', border:'1px solid #f0ddd7', marginBottom:'2rem' }}>
             <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
@@ -482,7 +375,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ══ SUGGESTIONS ══ */}
       {activeTab==='suggestions' && (
         <div>
           <div style={{ display:'flex', gap:'10px', marginBottom:'2rem', flexWrap:'wrap' }}>
@@ -518,15 +410,12 @@ export default function AdminDashboard() {
                     <p style={{ color:'#6b5a55', fontSize:'0.86rem', margin:'10px 0 16px', lineHeight:'1.7' }}>{s.description}</p>
                     {s.status==='pending' && (
                       <div style={{ display:'flex', gap:'10px' }}>
-                        <button onClick={()=>updateStatus(s._id,'approved')} disabled={updatingId===s._id}
-                          style={{ padding:'9px 20px', background:'linear-gradient(135deg,#4caf50,#2e7d52)', color:'white', border:'none', borderRadius:'12px', cursor:'pointer', fontWeight:'700', fontSize:'0.82rem' }}>✅ Approve</button>
-                        <button onClick={()=>updateStatus(s._id,'rejected')} disabled={updatingId===s._id}
-                          style={{ padding:'9px 20px', background:'#fdeee9', color:'#c0392b', border:'1px solid #f0c4b8', borderRadius:'12px', cursor:'pointer', fontWeight:'700', fontSize:'0.82rem' }}>❌ Reject</button>
+                        <button onClick={()=>updateStatus(s._id,'approved')} disabled={updatingId===s._id} style={{ padding:'9px 20px', background:'linear-gradient(135deg,#4caf50,#2e7d52)', color:'white', border:'none', borderRadius:'12px', cursor:'pointer', fontWeight:'700', fontSize:'0.82rem' }}>✅ Approve</button>
+                        <button onClick={()=>updateStatus(s._id,'rejected')} disabled={updatingId===s._id} style={{ padding:'9px 20px', background:'#fdeee9', color:'#c0392b', border:'1px solid #f0c4b8', borderRadius:'12px', cursor:'pointer', fontWeight:'700', fontSize:'0.82rem' }}>❌ Reject</button>
                       </div>
                     )}
                     {s.status!=='pending' && (
-                      <button onClick={()=>updateStatus(s._id,'pending')}
-                        style={{ padding:'7px 16px', background:'white', color:'#a08880', border:'1px solid #f0ddd7', borderRadius:'10px', cursor:'pointer', fontWeight:'600', fontSize:'0.78rem' }}>🔄 Reset</button>
+                      <button onClick={()=>updateStatus(s._id,'pending')} style={{ padding:'7px 16px', background:'white', color:'#a08880', border:'1px solid #f0ddd7', borderRadius:'10px', cursor:'pointer', fontWeight:'600', fontSize:'0.78rem' }}>🔄 Reset</button>
                     )}
                   </div>
                 ))}
