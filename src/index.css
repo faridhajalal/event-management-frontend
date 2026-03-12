@@ -1,12 +1,12 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body, #root { height: 100%; }
-body { font-family: 'DM Sans', sans-serif; background: #fdf6f3; color: #2d1f1f; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+body { font-family: 'DM Sans', sans-serif; background: #fdf6f3; color: #6ec4ec; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 a { text-decoration: none; color: inherit; }
 button { cursor: pointer; }
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f5e8e3; }
-::-webkit-scrollbar-thumb { background: #c9a99a; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #b8887a; }
+::-webkit-scrollbar-track { background: #f3f5f7; }
+::-webkit-scrollbar-thumb { background: #21323b; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #7a9db1; }
 input, button, textarea, select { font-family: inherit; }
 input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; }

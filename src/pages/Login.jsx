@@ -44,7 +44,7 @@ function Login() {
     setLoading(true);
     setError('');
     try {
-      // ✅ Uses env variable — works locally AND on Render
+      
       const response = await axios.post(`${API_URL}/auth/login`, { email, password });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));

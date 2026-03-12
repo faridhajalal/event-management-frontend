@@ -59,4 +59,4 @@ function FeatureSection() {
   );
 }
 
-export default FeatureSection;  // ✅ Must have this!
+export default FeatureSection;  

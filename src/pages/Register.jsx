@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://eventhub-backend-o5w4.onrender.com/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const FLOWER_CSS = `
   @keyframes floatA { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-14px) rotate(12deg)} }
@@ -32,6 +32,7 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = (e) => {
@@ -46,12 +47,12 @@ function Register() {
     setShowConfirm(false);
     setLoading(true);
     setError('');
+    setSuccess('');
     try {
-      // ✅ Uses env variable — works locally AND on Render
-      const response = await axios.post(`${API_URL}/auth/signup`, { name, email, password });
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      navigate('/home');
+      await axios.post(`${API_URL}/auth/signup`, { name, email, password });
+      // ✅ Show success then go to LOGIN page
+      setSuccess('🎉 Account created! Redirecting to login...');
+      setTimeout(() => navigate('/login'), 2500);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally { setLoading(false); }
@@ -97,6 +98,14 @@ function Register() {
           <h1 style={{ color: '#2d1f1f', fontSize: '1.6rem', fontWeight: '700', marginBottom: '0.3rem', fontFamily: "'Cormorant Garamond', serif" }}>Create Account</h1>
           <p style={{ color: '#a08880', fontSize: '0.84rem', marginBottom: '1rem' }}>Join our lovely community 🌷</p>
 
+          {/* ✅ Success message */}
+          {success && (
+            <div style={{ background: '#edf7f0', border: '1px solid #b8ddc8', color: '#2e7d52', padding: '10px 13px', borderRadius: '10px', marginBottom: '0.9rem', fontSize: '0.82rem', fontWeight: '600' }}>
+              {success}
+            </div>
+          )}
+
+          {/* ❌ Error message */}
           {error && (
             <div style={{ background: '#fdeee9', border: '1px solid #f0c4b8', color: '#a05040', padding: '10px 13px', borderRadius: '10px', marginBottom: '0.9rem', fontSize: '0.82rem' }}>
               ⚠️ {error}
@@ -120,8 +129,8 @@ function Register() {
                 </div>
               </div>
             ))}
-            <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', background: loading ? '#ddd' : 'linear-gradient(135deg, #c9a99a, #b8887a)', color: 'white', border: 'none', borderRadius: '11px', fontWeight: '700', fontSize: '0.91rem', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '0.4rem', boxShadow: '0 6px 20px rgba(201,169,154,0.4)' }}>
-              {loading ? '✨ Creating...' : '🌸 Create Account'}
+            <button type="submit" disabled={loading || !!success} style={{ width: '100%', padding: '12px', background: (loading || success) ? '#ddd' : 'linear-gradient(135deg, #c9a99a, #b8887a)', color: 'white', border: 'none', borderRadius: '11px', fontWeight: '700', fontSize: '0.91rem', cursor: (loading || success) ? 'not-allowed' : 'pointer', marginTop: '0.4rem', boxShadow: '0 6px 20px rgba(201,169,154,0.4)' }}>
+              {loading ? '✨ Creating...' : success ? '✅ Account Created!' : '🌸 Create Account'}
             </button>
           </form>
 

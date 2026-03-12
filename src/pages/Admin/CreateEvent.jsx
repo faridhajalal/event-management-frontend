@@ -28,7 +28,7 @@ function CreateEvent() {
     }
   };
 
-  // Convert any date format to YYYY-MM-DD
+
   const normalizeDate = (raw) => {
     if (!raw) return '';
     if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
@@ -110,12 +110,12 @@ function CreateEvent() {
               <div>
                 <label style={lbl}>DATE *</label>
 
-                {/* ✅ Date picker (Chrome works) */}
+               
                 <input type="date" name="date" value={form.date} onChange={handleChange}
                   style={{ ...inp, marginBottom: '8px' }}
                   onFocus={e => e.target.style.borderColor = '#c9a99a'} onBlur={e => e.target.style.borderColor = '#f0ddd7'} />
 
-                {/* ✅ Text fallback (Edge / manual entry) */}
+               
                 <input type="text" name="date" value={form.date} onChange={handleChange}
                   placeholder="Or type: 2026-05-10"
                   style={{ ...inp, background: '#fdf6f3', fontSize: '0.82rem' }}

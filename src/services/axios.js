@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// ✅ Works for BOTH local development AND Render deployment
-const BASE_URL = process.env.REACT_APP_API_URL || 'https://eventhub-backend-o5w4.onrender.com/api';
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://eventhub-backend-o5w.onrender.com/api';
 
 const API = axios.create({
   baseURL: BASE_URL

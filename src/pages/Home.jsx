@@ -21,6 +21,7 @@ const FLOWER_CSS = `
   @keyframes floatB { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-9px) rotate(-9deg)} }
   @keyframes floatC { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-18px) rotate(18deg)} }
   @keyframes floatD { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-11px) rotate(-14deg)} }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 `;
 
 const BG_FLOWERS = [
@@ -38,13 +39,23 @@ function PageFlowers() {
   return (
     <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
       {BG_FLOWERS.map((fl, i) => (
-        <span key={i} style={{
-          position: 'fixed', top: fl.top, left: fl.left,
-          fontSize: fl.size, opacity: fl.op,
-          animation: `${fl.anim} ${fl.dur} ease-in-out infinite`,
-          animationDelay: `${i * 0.4}s`
-        }}>{fl.f}</span>
+        <span key={i} style={{ position: 'fixed', top: fl.top, left: fl.left, fontSize: fl.size, opacity: fl.op, animation: `${fl.anim} ${fl.dur} ease-in-out infinite`, animationDelay: `${i * 0.4}s` }}>{fl.f}</span>
       ))}
+    </div>
+  );
+}
+
+// ⭐ Star Rating Display
+function StarRating({ rating, count }) {
+  if (!rating) return null;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
+      <div style={{ display: 'flex', gap: '1px' }}>
+        {[1,2,3,4,5].map(s => (
+          <span key={s} style={{ fontSize: '0.72rem', color: s <= Math.round(rating) ? '#f4a340' : '#ddd' }}>★</span>
+        ))}
+      </div>
+      <span style={{ color: '#a08880', fontSize: '0.7rem' }}>{parseFloat(rating).toFixed(1)} ({count})</span>
     </div>
   );
 }
@@ -59,21 +70,16 @@ function BookButton({ event }) {
     );
   }
   return (
-    <button onClick={() => navigate(`/events/${event._id}`)} style={{
-      width: '100%', padding: '11px', background: 'linear-gradient(135deg, #c9a99a, #b8887a)',
-      color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer',
-      fontWeight: '600', fontSize: '0.84rem', fontFamily: "'DM Sans', sans-serif",
-      boxShadow: '0 4px 14px rgba(201,169,154,0.35)', transition: 'all 0.2s'
-    }}
+    <button onClick={() => navigate(`/events/${event._id}`)}
+      style={{ width: '100%', padding: '11px', background: 'linear-gradient(135deg, #c9a99a, #b8887a)', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '0.84rem', fontFamily: "'DM Sans', sans-serif", boxShadow: '0 4px 14px rgba(201,169,154,0.35)', transition: 'all 0.2s' }}
       onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
-      onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-    >
+      onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
       🎟️ Book Now
     </button>
   );
 }
 
-function EventCard({ event }) {
+function EventCard({ event, ratings }) {
   const getImage = () => {
     if (event.image && event.image.trim() !== '') return event.image;
     return CATEGORY_IMAGES[event.category] || CATEGORY_IMAGES.Other;
@@ -92,12 +98,12 @@ function EventCard({ event }) {
   };
 
   const badge = getDaysBadge();
+  const eventRatings = ratings[event._id] || { avg: 0, count: 0 };
 
   return (
     <div style={{ background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(201,169,154,0.12)', border: '1px solid #f5e8e3', transition: 'all 0.3s', position: 'relative', zIndex: 1 }}
       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 16px 40px rgba(201,169,154,0.25)'; }}
-      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(201,169,154,0.12)'; }}
-    >
+      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(201,169,154,0.12)'; }}>
       <div style={{ position: 'relative', height: '195px', overflow: 'hidden', background: '#f5e8e3' }}>
         <img src={getImage()} alt={event.name}
           style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }}
@@ -115,7 +121,9 @@ function EventCard({ event }) {
         <span style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(253,246,243,0.96)', color: '#c9a99a', padding: '5px 13px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '800' }}>₹{event.price}</span>
       </div>
       <div style={{ padding: '1.2rem' }}>
-        <h3 style={{ color: '#2d1f1f', fontWeight: '700', fontSize: '0.98rem', marginBottom: '0.5rem', lineHeight: '1.35' }}>{event.name}</h3>
+        <h3 style={{ color: '#2d1f1f', fontWeight: '700', fontSize: '0.98rem', marginBottom: '0.4rem', lineHeight: '1.35' }}>{event.name}</h3>
+        {/* ⭐ Star Rating */}
+        {eventRatings.count > 0 && <StarRating rating={eventRatings.avg} count={eventRatings.count} />}
         <p style={{ color: '#a08880', fontSize: '0.76rem', marginBottom: '0.3rem' }}>📅 {new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} • {event.time}</p>
         <p style={{ color: '#a08880', fontSize: '0.76rem', marginBottom: '1rem' }}>📍 {event.venue}</p>
         <div style={{ marginBottom: '1rem' }}>
@@ -133,7 +141,7 @@ function EventCard({ event }) {
   );
 }
 
-function EventSection({ title, subtitle, icon, events }) {
+function EventSection({ title, subtitle, icon, events, ratings }) {
   if (events.length === 0) return null;
   return (
     <div style={{ marginBottom: '3rem', position: 'relative' }}>
@@ -146,7 +154,7 @@ function EventSection({ title, subtitle, icon, events }) {
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-        {events.map(event => <EventCard key={event._id} event={event} />)}
+        {events.map(event => <EventCard key={event._id} event={event} ratings={ratings} />)}
       </div>
     </div>
   );
@@ -159,6 +167,7 @@ function Home() {
   const [locationFilter, setLocationFilter] = useState('');
   const [category, setCategory] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [ratings, setRatings] = useState({});
   const isSearching = search !== '' || locationFilter !== '' || category !== 'All';
 
   useEffect(() => { fetchEvents(); }, []);
@@ -175,9 +184,27 @@ function Home() {
     try {
       const res = await API.get('/events');
       const sorted = (res.data.events || []).sort((a, b) => new Date(a.date) - new Date(b.date));
-      setEvents(sorted); setFiltered(sorted);
+      setEvents(sorted);
+      setFiltered(sorted);
+      // Fetch ratings for each event
+      fetchRatings(sorted);
     } catch { setEvents([]); setFiltered([]); }
     finally { setLoading(false); }
+  };
+
+  const fetchRatings = async (eventList) => {
+    const ratingsMap = {};
+    await Promise.all(eventList.map(async (event) => {
+      try {
+        const res = await API.get(`/ratings/${event._id}`);
+        const data = res.data || [];
+        if (data.length > 0) {
+          const avg = data.reduce((sum, r) => sum + r.rating, 0) / data.length;
+          ratingsMap[event._id] = { avg: avg.toFixed(1), count: data.length };
+        }
+      } catch { }
+    }));
+    setRatings(ratingsMap);
   };
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -197,20 +224,10 @@ function Home() {
 
       {/* ── HERO ── */}
       <section style={{ background: 'linear-gradient(135deg, #2d1f1f 0%, #4a2f2f 50%, #3d2525 100%)', padding: '5rem 2rem', position: 'relative', overflow: 'hidden' }}>
-        {/* Hero floating flowers */}
         {['🌸','🌺','🌼','🌷','💮','🌸','🌺'].map((f, i) => (
-          <span key={i} style={{
-            position: 'absolute', fontSize: `${1 + (i % 3) * 0.5}rem`,
-            opacity: 0.15 + (i % 3) * 0.05,
-            left: `${4 + i * 13}%`, top: `${15 + (i % 4) * 18}%`,
-            animation: `float${['A','B','C','D'][i%4]} ${3.5 + i * 0.5}s ease-in-out infinite`,
-            animationDelay: `${i * 0.3}s`, pointerEvents: 'none'
-          }}>{f}</span>
+          <span key={i} style={{ position: 'absolute', fontSize: `${1 + (i % 3) * 0.5}rem`, opacity: 0.15 + (i % 3) * 0.05, left: `${4 + i * 13}%`, top: `${15 + (i % 4) * 18}%`, animation: `float${['A','B','C','D'][i%4]} ${3.5 + i * 0.5}s ease-in-out infinite`, animationDelay: `${i * 0.3}s`, pointerEvents: 'none' }}>{f}</span>
         ))}
-
         <div style={{ position: 'absolute', top: '-80px', right: '10%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(201,169,154,0.2) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-60px', left: '5%', width: '250px', height: '250px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(232,196,184,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
         <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'inline-block', background: 'rgba(201,169,154,0.2)', border: '1px solid rgba(201,169,154,0.3)', borderRadius: '20px', padding: '6px 18px', marginBottom: '1.2rem' }}>
             <span style={{ color: '#e8c4b8', fontSize: '0.78rem', fontWeight: '600', letterSpacing: '2px' }}>🌸 DISCOVER AMAZING EXPERIENCES 🌸</span>
@@ -222,7 +239,7 @@ function Home() {
             Concerts, festivals, workshops and more — all in one beautiful place.
           </p>
 
-          {/* Search */}
+          {/* Search Bar */}
           <div style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', border: '1px solid rgba(201,169,154,0.25)', borderRadius: '18px', padding: '1rem 1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', maxWidth: '700px', margin: '0 auto 2.5rem', flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: '120px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>🔍</span>
@@ -253,26 +270,32 @@ function Home() {
         </div>
       </section>
 
+      {/* ── SUGGEST EVENT BANNER ── */}
+      <section style={{ background: 'linear-gradient(135deg, #fdf0eb, #f5e0d8)', padding: '1.5rem 2rem', borderBottom: '1px solid #f0ddd7', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: '1300px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '44px', height: '44px', background: 'linear-gradient(135deg, #c9a99a, #b8887a)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>💡</div>
+            <div>
+              <h3 style={{ color: '#2d1f1f', fontWeight: '700', margin: 0, fontSize: '0.98rem' }}>Have an event idea?</h3>
+              <p style={{ color: '#a08880', margin: 0, fontSize: '0.8rem' }}>Suggest an event and we might make it happen! 🌸</p>
+            </div>
+          </div>
+          <Link to="/suggest-event" style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #c9a99a, #b8887a)', color: 'white', borderRadius: '25px', textDecoration: 'none', fontWeight: '700', fontSize: '0.85rem', boxShadow: '0 4px 14px rgba(201,169,154,0.4)', whiteSpace: 'nowrap' }}>
+            💡 Suggest Event →
+          </Link>
+        </div>
+      </section>
+
       {/* ── CATEGORY PILLS ── */}
       <section style={{ background: 'white', padding: '1rem 2rem', borderBottom: '1px solid #f0ddd7', boxShadow: '0 2px 10px rgba(201,169,154,0.1)', position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{ maxWidth: '1300px', margin: '0 auto', display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px', alignItems: 'center' }}>
           <span style={{ flexShrink: 0, fontSize: '1rem', opacity: 0.4 }}>🌸</span>
           {CATEGORIES.map(cat => (
-            <button key={cat} onClick={() => setCategory(cat)} style={{
-              padding: '7px 18px', borderRadius: '20px', border: '1.5px solid', cursor: 'pointer',
-              fontWeight: '500', fontSize: '0.8rem', whiteSpace: 'nowrap', fontFamily: "'DM Sans', sans-serif",
-              borderColor: category === cat ? '#c9a99a' : '#f0ddd7',
-              background: category === cat ? 'linear-gradient(135deg, #c9a99a, #e8c4b8)' : 'white',
-              color: category === cat ? 'white' : '#8a6a65',
-              boxShadow: category === cat ? '0 4px 12px rgba(201,169,154,0.3)' : 'none',
-              transition: 'all 0.2s'
-            }}>{cat}</button>
+            <button key={cat} onClick={() => setCategory(cat)} style={{ padding: '7px 18px', borderRadius: '20px', border: '1.5px solid', cursor: 'pointer', fontWeight: '500', fontSize: '0.8rem', whiteSpace: 'nowrap', fontFamily: "'DM Sans', sans-serif", borderColor: category === cat ? '#c9a99a' : '#f0ddd7', background: category === cat ? 'linear-gradient(135deg, #c9a99a, #e8c4b8)' : 'white', color: category === cat ? 'white' : '#8a6a65', boxShadow: category === cat ? '0 4px 12px rgba(201,169,154,0.3)' : 'none', transition: 'all 0.2s' }}>{cat}</button>
           ))}
           <span style={{ flexShrink: 0, fontSize: '1rem', opacity: 0.4 }}>🌺</span>
           {isSearching && (
-            <button onClick={() => { setSearch(''); setLocationFilter(''); setCategory('All'); }} style={{ padding: '7px 16px', borderRadius: '20px', border: '1.5px solid #f0ddd7', cursor: 'pointer', fontWeight: '600', fontSize: '0.78rem', whiteSpace: 'nowrap', fontFamily: "'DM Sans', sans-serif", background: '#fdeee9', color: '#c9a99a' }}>
-              ✕ Clear
-            </button>
+            <button onClick={() => { setSearch(''); setLocationFilter(''); setCategory('All'); }} style={{ padding: '7px 16px', borderRadius: '20px', border: '1.5px solid #f0ddd7', cursor: 'pointer', fontWeight: '600', fontSize: '0.78rem', whiteSpace: 'nowrap', fontFamily: "'DM Sans', sans-serif", background: '#fdeee9', color: '#c9a99a' }}>✕ Clear</button>
           )}
         </div>
       </section>
@@ -305,31 +328,44 @@ function Home() {
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
-                  {filtered.map(event => <EventCard key={event._id} event={event} />)}
+                  {filtered.map(event => <EventCard key={event._id} event={event} ratings={ratings} />)}
                 </div>
               )}
             </div>
           ) : (
             <div>
-              <EventSection title="🔴 Happening Today"  subtitle={`${todayEvents.length} event${todayEvents.length !== 1 ? 's' : ''} today — don't miss out!`}          icon="🔴" events={todayEvents} />
-              <EventSection title="📅 This Week"        subtitle={`${thisWeekEvents.length} event${thisWeekEvents.length !== 1 ? 's' : ''} in the next 7 days`}            icon="📅" events={thisWeekEvents} />
-              <EventSection title="🌸 This Month"       subtitle={`${thisMonthEvents.length} event${thisMonthEvents.length !== 1 ? 's' : ''} coming up this month`}         icon="🌸" events={thisMonthEvents} />
-              <EventSection title="✨ Upcoming Events"  subtitle={`${upcomingEvents.length} event${upcomingEvents.length !== 1 ? 's' : ''} planned ahead`}                  icon="✨" events={upcomingEvents} />
-              {pastEvents.length > 0 && <EventSection title="📁 Past Events" subtitle={`${pastEvents.length} completed event${pastEvents.length !== 1 ? 's' : ''}`}         icon="📁" events={pastEvents} />}
+              <EventSection title="🔴 Happening Today"  subtitle={`${todayEvents.length} event${todayEvents.length !== 1 ? 's' : ''} today`}          icon="🔴" events={todayEvents}     ratings={ratings} />
+              <EventSection title="📅 This Week"        subtitle={`${thisWeekEvents.length} events in next 7 days`}                                     icon="📅" events={thisWeekEvents}  ratings={ratings} />
+              <EventSection title="🌸 This Month"       subtitle={`${thisMonthEvents.length} events this month`}                                        icon="🌸" events={thisMonthEvents} ratings={ratings} />
+              <EventSection title="✨ Upcoming Events"  subtitle={`${upcomingEvents.length} events planned ahead`}                                      icon="✨" events={upcomingEvents}  ratings={ratings} />
+              {pastEvents.length > 0 && <EventSection title="📁 Past Events" subtitle={`${pastEvents.length} completed events`}                         icon="📁" events={pastEvents}      ratings={ratings} />}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* ── FEEDBACK CTA ── */}
+      <section style={{ background: 'white', padding: '2rem', borderTop: '1px solid #f0ddd7', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: '1300px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '44px', height: '44px', background: 'linear-gradient(135deg, #c9a99a, #b8887a)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>💬</div>
+            <div>
+              <h3 style={{ color: '#2d1f1f', fontWeight: '700', margin: 0, fontSize: '0.98rem' }}>Share your feedback!</h3>
+              <p style={{ color: '#a08880', margin: 0, fontSize: '0.8rem' }}>Click the 💬 button on the bottom right to chat with us 🌸</p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {['⭐ Rate Events', '💡 Suggest Events', '💬 Give Feedback'].map((item, i) => (
+              <span key={i} style={{ padding: '6px 14px', background: '#fdf0eb', border: '1px solid #f0ddd7', borderRadius: '20px', fontSize: '0.75rem', color: '#b8887a', fontWeight: '600' }}>{item}</span>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── CTA ── */}
       <section style={{ background: 'linear-gradient(135deg, #c9a99a 0%, #b8887a 100%)', padding: '5rem 2rem', textAlign: 'center', position: 'relative', overflow: 'hidden', zIndex: 1 }}>
         {['🌸','🌺','🌼','🌷','🌸','💮','🌺','🌸'].map((f, i) => (
-          <span key={i} style={{
-            position: 'absolute', fontSize: `${0.9 + (i % 3) * 0.4}rem`,
-            opacity: 0.2, left: `${i * 13}%`, top: `${10 + (i % 3) * 30}%`,
-            animation: `float${['A','B','C','D'][i%4]} ${4 + i * 0.4}s ease-in-out infinite`,
-            animationDelay: `${i * 0.5}s`, pointerEvents: 'none'
-          }}>{f}</span>
+          <span key={i} style={{ position: 'absolute', fontSize: `${0.9 + (i % 3) * 0.4}rem`, opacity: 0.2, left: `${i * 13}%`, top: `${10 + (i % 3) * 30}%`, animation: `float${['A','B','C','D'][i%4]} ${4 + i * 0.4}s ease-in-out infinite`, animationDelay: `${i * 0.5}s`, pointerEvents: 'none' }}>{f}</span>
         ))}
         <div style={{ maxWidth: '550px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🌸</div>
@@ -343,4 +379,5 @@ function Home() {
     </div>
   );
 }
+
 export default Home;

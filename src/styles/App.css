@@ -1,7 +1,7 @@
 /* src/styles/App.css */
 body {
   font-family: Arial, sans-serif;
-  background-color: #f5f6fa;
+  background-color: #6cc8f3;
   margin: 0;
   padding: 0;
 }
@@ -10,7 +10,7 @@ body {
   max-width: 900px;
   margin: 30px auto;
   padding: 20px;
-  background-color: #ffffff;
+  background-color: #8da3aa;
   border-radius: 10px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
@@ -59,7 +59,7 @@ body, html {
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f0f2f5;
+  background: #8eabb6;
   height: 100%;
 }
 
@@ -68,7 +68,7 @@ body, html {
   width: 100%;
   max-width: 400px;
   padding: 40px 30px;
-  background: #fff;
+  background: #73c9fc;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   margin: 80px auto; /* centers horizontally */
@@ -80,7 +80,7 @@ body, html {
 /* Heading */
 .login-container h2 {
   margin-bottom: 30px;
-  color: #333;
+  color: #bad8dd;
 }
 
 /* Input fields */

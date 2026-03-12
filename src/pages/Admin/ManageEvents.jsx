@@ -37,14 +37,14 @@ function ManageEvents() {
     } finally { setLoading(false); }
   };
 
-  // ✅ Pre-fill ALL saved data when clicking Edit
+
   const openEdit = (event) => {
-    // Format date to YYYY-MM-DD for input type="date"
+    
     let dateValue = '';
     if (event.date) {
       const d = new Date(event.date);
       if (!isNaN(d)) {
-        dateValue = d.toISOString().split('T')[0]; // Always YYYY-MM-DD
+        dateValue = d.toISOString().split('T')[0]; 
       }
     }
 
@@ -216,7 +216,7 @@ function ManageEvents() {
         </div>
       )}
 
-      {/* ── EDIT MODAL ── */}
+  
       {editEvent && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(45,31,31,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
           <div style={{ background: 'white', borderRadius: '24px', padding: '2rem', width: '100%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 30px 60px rgba(45,31,31,0.3)' }}>
