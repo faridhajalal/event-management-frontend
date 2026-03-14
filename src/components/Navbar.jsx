@@ -1,221 +1,283 @@
-import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-const FLOWER_CSS = `
-  @keyframes floatA { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(8deg)} }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes spin   { to{transform:rotate(360deg)} }
-`;
+const T = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif";
+const GOLD = '#D4AF37';
 
-function ConfirmModal({ onConfirm, onCancel }) {
-  return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(45,31,31,0.6)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999 }}>
-      <div style={{ background:'white', borderRadius:'20px', padding:'2rem', maxWidth:'360px', width:'90%', textAlign:'center', boxShadow:'0 20px 60px rgba(45,31,31,0.3)', position:'relative', overflow:'hidden' }}>
-        <span style={{ position:'absolute', top:8, left:12, fontSize:'1.2rem', opacity:0.2 }}>🌸</span>
-        <span style={{ position:'absolute', top:8, right:12, fontSize:'1.2rem', opacity:0.2 }}>🌺</span>
-        <div style={{ fontSize:'2.5rem', marginBottom:'0.7rem' }}>👋</div>
-        <h3 style={{ color:'#2d1f1f', fontWeight:'700', fontSize:'1.2rem', marginBottom:'0.4rem', fontFamily:"'Cormorant Garamond',serif" }}>Leaving so soon?</h3>
-        <p style={{ color:'#a08880', fontSize:'0.84rem', marginBottom:'1.5rem', lineHeight:'1.5' }}>Are you sure you want to log out of EventHub? We'll miss you! 🌸</p>
-        <div style={{ display:'flex', gap:'10px' }}>
-          <button onClick={onCancel} style={{ flex:1, padding:'11px', background:'#f5e8e3', color:'#a08880', border:'none', borderRadius:'12px', cursor:'pointer', fontWeight:'600', fontSize:'0.85rem' }}>Stay</button>
-          <button onClick={onConfirm} style={{ flex:2, padding:'11px', background:'linear-gradient(135deg,#c9a99a,#b8887a)', color:'white', border:'none', borderRadius:'12px', cursor:'pointer', fontWeight:'700', fontSize:'0.85rem' }}>Yes, Logout 👋</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Avatar({ photo, name, size = 32, border = false }) {
-  return (
-    <div style={{ width:`${size}px`, height:`${size}px`, borderRadius:'50%', overflow:'hidden', flexShrink:0, border: border ? '2.5px solid rgba(255,255,255,0.5)' : 'none', background:'linear-gradient(135deg,#c9a99a,#b8887a)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-      {photo
-        ? <img src={photo} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-        : <span style={{ color:'white', fontWeight:'800', fontSize:`${size * 0.38}px` }}>{name ? name.charAt(0).toUpperCase() : '?'}</span>
-      }
-    </div>
-  );
-}
-
-function Navbar() {
-  const navigate   = useNavigate();
-  const location   = useLocation();
-  const profileRef = useRef(null);
-  const fileRef    = useRef(null);
-
-  const [showLogout,  setShowLogout]  = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [uploading,   setUploading]   = useState(false);
-  const [hoverCam,    setHoverCam]    = useState(false);
-
+export default function Navbar() {
+  const navigate = useNavigate();
   const user = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; } })();
-  const PHOTO_KEY = `profile_photo_${user.id || 'guest'}`;
-  const [profilePhoto, setProfilePhoto] = useState(() => localStorage.getItem(PHOTO_KEY) || '');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
-  useEffect(() => {
-    const handler = (e) => { if (profileRef.current && !profileRef.current.contains(e.target)) setShowProfile(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const handleLogout = () => {
+  const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    setShowLogout(false);
     navigate('/login');
   };
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { alert('Photo must be under 2MB'); return; }
-    setUploading(true);
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target.result;
-      localStorage.setItem(PHOTO_KEY, dataUrl);
-      setProfilePhoto(dataUrl);
-      setUploading(false);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemovePhoto = () => {
-    localStorage.removeItem(PHOTO_KEY);
-    setProfilePhoto('');
-  };
-
-  const isActive = (path) => location.pathname === path;
-
-  const navLinks = [
-    { path:'/home',        label:'🏠 Home' },
-    { path:'/my-bookings', label:'🎫 My Bookings' },
-  ];
+  const initials = (user?.name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <>
-      <style>{FLOWER_CSS}</style>
-      {showLogout && <ConfirmModal onConfirm={handleLogout} onCancel={() => setShowLogout(false)} />}
-      <input ref={fileRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handlePhotoChange} />
-
-      <nav style={{ background:'rgba(255,250,248,0.95)', backdropFilter:'blur(20px)', borderBottom:'1px solid #f0ddd7', padding:'0 2rem', height:'65px', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:100, boxShadow:'0 2px 20px rgba(201,169,154,0.12)', fontFamily:"'DM Sans',sans-serif" }}>
-
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: 'rgba(0,0,0,0.92)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        padding: '0 2.5rem',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        height: '62px',
+        fontFamily: T,
+      }}>
         {/* Logo */}
-        <Link to="/home" style={{ display:'flex', alignItems:'center', gap:'8px', textDecoration:'none' }}>
-          <div style={{ width:'36px', height:'36px', background:'linear-gradient(135deg,#c9a99a,#e8c4b8)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.1rem', animation:'floatA 4s ease-in-out infinite' }}>🌸</div>
-          <span style={{ fontWeight:'700', fontSize:'1.15rem', color:'#2d1f1f', fontFamily:"'Cormorant Garamond',serif" }}>
-            Event<span style={{ color:'#c9a99a' }}>Hub</span>
-          </span>
+        <Link to="/home" style={{ fontWeight: 700, fontSize: '1.25rem', color: '#fff', textDecoration: 'none', letterSpacing: '-0.5px' }}>
+          Nex<span style={{ color: GOLD }}>Event</span>
         </Link>
 
-        {/* Nav Links */}
-        <div style={{ display:'flex', alignItems:'center', gap:'4px' }}>
-          {navLinks.map(link => (
-            <Link key={link.path} to={link.path} style={{ padding:'8px 16px', borderRadius:'10px', textDecoration:'none', fontSize:'0.85rem', fontWeight:'500', transition:'all 0.2s', background:isActive(link.path)?'linear-gradient(135deg,#c9a99a,#e8c4b8)':'transparent', color:isActive(link.path)?'white':'#6b5a55' }}>
-              {link.label}
+        {/* Links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
+          {[
+            { to: '/home', label: 'Home' },
+            { to: '/my-bookings', label: 'My Bookings' },
+            { to: '/suggest-event', label: 'Suggest', gold: true },
+          ].map(({ to, label, gold }) => (
+            <Link key={to} to={to} style={{ color: '#A0A0A0', textDecoration: 'none', fontSize: '0.88rem', fontWeight: 500, transition: 'color 0.2s' }}
+              onMouseEnter={e => e.target.style.color = gold ? GOLD : '#fff'}
+              onMouseLeave={e => e.target.style.color = '#A0A0A0'}>
+              {label}
             </Link>
           ))}
         </div>
 
-        {/* User Profile Button */}
-        <div ref={profileRef} style={{ position:'relative' }}>
-          <button onClick={() => setShowProfile(!showProfile)}
-            style={{ display:'flex', alignItems:'center', gap:'8px', background:'linear-gradient(135deg,#fdf6f3,#f9ede8)', border:'1.5px solid #f0ddd7', borderRadius:'50px', padding:'6px 14px 6px 6px', cursor:'pointer', transition:'all 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor='#c9a99a'}
-            onMouseLeave={e => e.currentTarget.style.borderColor='#f0ddd7'}>
-            <Avatar photo={profilePhoto} name={user.name} size={32} />
-            <span style={{ color:'#2d1f1f', fontWeight:'600', fontSize:'0.85rem', maxWidth:'100px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user.name || 'User'}</span>
-            <span style={{ color:'#c9a99a', fontSize:'0.7rem' }}>{showProfile ? '▲' : '▼'}</span>
+        {/* Right */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {/* Avatar */}
+          <button onClick={() => setShowProfile(true)} style={{
+            width: '34px', height: '34px', borderRadius: '50%',
+            background: user?.profilePhoto ? 'transparent' : 'rgba(212,175,55,0.15)',
+            border: `1px solid rgba(212,175,55,0.3)`,
+            cursor: 'pointer', overflow: 'hidden',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 0, flexShrink: 0,
+          }}>
+            {user?.profilePhoto
+              ? <img src={user.profilePhoto} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ color: GOLD, fontSize: '0.72rem', fontWeight: 700 }}>{initials}</span>
+            }
           </button>
 
-          {/* ── DROPDOWN ── */}
-          {showProfile && (
-            <div style={{ position:'absolute', right:0, top:'calc(100% + 10px)', background:'white', borderRadius:'18px', boxShadow:'0 20px 60px rgba(201,169,154,0.3)', border:'1px solid #f0ddd7', minWidth:'280px', overflow:'hidden', zIndex:200, animation:'fadeUp 0.25s ease' }}>
+          <span style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 600 }}>
+            {user?.name || user?.email?.split('@')[0] || 'User'}
+          </span>
 
-              {/* Header */}
-              <div style={{ background:'linear-gradient(135deg,#c9a99a,#b8887a)', padding:'1.5rem', position:'relative', overflow:'hidden' }}>
-                <span style={{ position:'absolute', top:8, right:12, fontSize:'1.2rem', opacity:0.3 }}>🌸</span>
-                <span style={{ position:'absolute', bottom:8, left:12, fontSize:'1rem', opacity:0.25 }}>🌺</span>
-
-                <div style={{ display:'flex', alignItems:'center', gap:'12px', position:'relative' }}>
-                  {/* Clickable avatar with camera overlay */}
-                  <div style={{ position:'relative', cursor:'pointer', flexShrink:0 }}
-                    onClick={() => fileRef.current?.click()}
-                    onMouseEnter={() => setHoverCam(true)}
-                    onMouseLeave={() => setHoverCam(false)}>
-                    <Avatar photo={profilePhoto} name={user.name} size={56} border={true} />
-                    {/* camera overlay on hover */}
-                    <div style={{ position:'absolute', inset:0, borderRadius:'50%', background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center', opacity: hoverCam ? 1 : 0, transition:'opacity 0.2s' }}>
-                      <span style={{ fontSize:'1.2rem' }}>📷</span>
-                    </div>
-                    {/* uploading spinner */}
-                    {uploading && (
-                      <div style={{ position:'absolute', inset:0, borderRadius:'50%', background:'rgba(255,255,255,0.55)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                        <div style={{ width:'20px', height:'20px', border:'2.5px solid #c9a99a', borderTopColor:'transparent', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} />
-                      </div>
-                    )}
-                    {/* small camera badge */}
-                    <div style={{ position:'absolute', bottom:1, right:1, width:'18px', height:'18px', background:'white', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.58rem', boxShadow:'0 2px 6px rgba(0,0,0,0.25)', border:'1.5px solid #f0ddd7' }}>📷</div>
-                  </div>
-
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ color:'white', fontWeight:'700', fontSize:'1rem', margin:0 }}>{user.name || 'User'}</p>
-                    <p style={{ color:'rgba(255,255,255,0.8)', fontSize:'0.74rem', margin:'2px 0', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{user.email || ''}</p>
-                    <span style={{ display:'inline-block', background:'rgba(255,255,255,0.2)', color:'white', fontSize:'0.65rem', fontWeight:'700', padding:'2px 8px', borderRadius:'20px', marginTop:'3px' }}>
-                      {user.role === 'admin' ? '👑 Admin' : '🌸 Member'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Upload / Remove buttons */}
-                <div style={{ display:'flex', gap:'6px', marginTop:'12px' }}>
-                  <button onClick={() => fileRef.current?.click()}
-                    style={{ flex:1, padding:'7px 10px', background:'rgba(255,255,255,0.22)', border:'1px solid rgba(255,255,255,0.35)', borderRadius:'9px', color:'white', fontSize:'0.73rem', fontWeight:'600', cursor:'pointer', fontFamily:"'DM Sans',sans-serif", display:'flex', alignItems:'center', justifyContent:'center', gap:'5px' }}>
-                    📷 {profilePhoto ? 'Change Photo' : 'Add Photo'}
-                  </button>
-                  {profilePhoto && (
-                    <button onClick={handleRemovePhoto}
-                      style={{ padding:'7px 10px', background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.25)', borderRadius:'9px', color:'rgba(255,255,255,0.85)', fontSize:'0.73rem', fontWeight:'600', cursor:'pointer', fontFamily:"'DM Sans',sans-serif", display:'flex', alignItems:'center', gap:'4px' }}>
-                      🗑️ Remove
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Profile Details */}
-              <div style={{ padding:'1rem' }}>
-                {[
-                  { icon:'👤', label:'Full Name', value: user.name  || '—' },
-                  { icon:'✉️', label:'Email',      value: user.email || '—' },
-                  { icon:'🎭', label:'Role',       value: user.role === 'admin' ? 'Administrator' : 'Member' },
-                  { icon:'🆔', label:'User ID',    value: user.id ? user.id.slice(-8).toUpperCase() : '—' },
-                ].map((d, i) => (
-                  <div key={i} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 10px', borderRadius:'10px', marginBottom:'4px', background:'#fdf6f3' }}>
-                    <span style={{ fontSize:'1rem', width:'24px', textAlign:'center' }}>{d.icon}</span>
-                    <div style={{ minWidth:0 }}>
-                      <p style={{ color:'#a08880', fontSize:'0.68rem', margin:0, fontWeight:'600' }}>{d.label}</p>
-                      <p style={{ color:'#2d1f1f', fontSize:'0.82rem', margin:0, fontWeight:'600', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.value}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Actions */}
-              <div style={{ padding:'0 1rem 1rem' }}>
-                <Link to="/my-bookings" onClick={() => setShowProfile(false)}
-                  style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 14px', background:'#fdf6f3', borderRadius:'12px', textDecoration:'none', color:'#6b5a55', fontSize:'0.85rem', fontWeight:'600', marginBottom:'8px', border:'1px solid #f5e8e3' }}>
-                  🎫 My Bookings
-                </Link>
-                <button onClick={() => { setShowProfile(false); setShowLogout(true); }}
-                  style={{ width:'100%', display:'flex', alignItems:'center', gap:'8px', padding:'10px 14px', background:'#fdeee9', border:'1px solid #f0c4b8', borderRadius:'12px', color:'#a05040', fontSize:'0.85rem', fontWeight:'600', cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
-                  👋 Logout
-                </button>
-              </div>
-            </div>
-          )}
+          <button onClick={() => setShowConfirm(true)} style={{
+            background: 'transparent', border: '1px solid rgba(255,255,255,0.12)',
+            color: '#A0A0A0', borderRadius: '8px', padding: '7px 18px',
+            cursor: 'pointer', fontSize: '0.82rem', fontWeight: 500,
+            fontFamily: T, transition: 'all 0.2s',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF453A'; e.currentTarget.style.color = '#FF453A'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = '#A0A0A0'; }}>
+            Sign Out
+          </button>
         </div>
       </nav>
+
+      {/* ── SIGN OUT CONFIRMATION MODAL ── */}
+      {showConfirm && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: T, animation: 'fadeIn 0.2s ease',
+        }} onClick={() => setShowConfirm(false)}>
+          <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}} @keyframes popUp{from{opacity:0;transform:scale(0.92) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}`}</style>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '20px', padding: '2rem', width: '100%', maxWidth: '360px',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.8)',
+            animation: 'popUp 0.25s ease',
+          }}>
+            <div style={{ width: '48px', height: '48px', background: 'rgba(255,69,58,0.1)', border: '1px solid rgba(255,69,58,0.2)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', margin: '0 auto 1.2rem' }}>
+              👋
+            </div>
+            <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '1.15rem', textAlign: 'center', margin: '0 0 8px' }}>
+              Ready to leave?
+            </h3>
+            <p style={{ color: '#666', fontSize: '0.86rem', textAlign: 'center', margin: '0 0 1.8rem', lineHeight: 1.6 }}>
+              You'll be signed out of your NexEvent account.
+            </p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => setShowConfirm(false)} style={{
+                flex: 1, padding: '12px', background: '#1a1a1a',
+                border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px',
+                color: '#A0A0A0', cursor: 'pointer', fontWeight: 600,
+                fontSize: '0.9rem', fontFamily: T, transition: 'all 0.2s',
+              }}
+                onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                onMouseLeave={e => e.currentTarget.style.color = '#A0A0A0'}>
+                Stay
+              </button>
+              <button onClick={logout} style={{
+                flex: 1, padding: '12px', background: 'rgba(255,69,58,0.1)',
+                border: '1px solid rgba(255,69,58,0.25)', borderRadius: '10px',
+                color: '#FF453A', cursor: 'pointer', fontWeight: 700,
+                fontSize: '0.9rem', fontFamily: T, transition: 'all 0.2s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,69,58,0.2)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,69,58,0.1)'; }}>
+                Yes, Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── PROFILE MODAL ── */}
+      {showProfile && (
+        <ProfileModal user={user} onClose={() => setShowProfile(false)} />
+      )}
     </>
   );
 }
 
-export default Navbar;
+function ProfileModal({ user, onClose }) {
+  const [photo, setPhoto] = useState(user?.profilePhoto || null);
+  const [name, setName] = useState(user?.name || '');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handlePhoto = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setPhoto(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      // Save to backend
+      const token = localStorage.getItem('token');
+      await fetch('http://localhost:5000/api/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name, profilePhoto: photo }),
+      });
+      // Update localStorage
+      const existing = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...existing, name, profilePhoto: photo }));
+      setSaved(true);
+      setTimeout(() => { setSaved(false); onClose(); window.location.reload(); }, 1200);
+    } catch {
+      alert('Failed to save profile.');
+    } finally { setSaving(false); }
+  };
+
+  const initials = (name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif",
+      animation: 'fadeIn 0.2s ease',
+    }} onClick={onClose}>
+      <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}} @keyframes popUp{from{opacity:0;transform:scale(0.92) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}`}</style>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '22px', padding: '2rem', width: '100%', maxWidth: '380px',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.8)',
+        animation: 'popUp 0.25s ease',
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.8rem' }}>
+          <div>
+            <p style={{ color: GOLD, fontSize: '0.68rem', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', margin: '0 0 4px' }}>My Profile</p>
+            <h3 style={{ color: '#fff', fontWeight: 700, fontSize: '1.1rem', margin: 0 }}>Edit Profile</h3>
+          </div>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#555', cursor: 'pointer', fontSize: '1.2rem', padding: '4px' }}>✕</button>
+        </div>
+
+        {/* Avatar Upload */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.8rem' }}>
+          <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
+            <div style={{
+              width: '80px', height: '80px', borderRadius: '50%',
+              background: photo ? 'transparent' : 'rgba(212,175,55,0.1)',
+              border: `2px solid rgba(212,175,55,0.3)`,
+              overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {photo
+                ? <img src={photo} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ color: GOLD, fontSize: '1.5rem', fontWeight: 700 }}>{initials}</span>
+              }
+            </div>
+            <label style={{
+              position: 'absolute', bottom: 0, right: 0,
+              width: '26px', height: '26px', borderRadius: '50%',
+              background: GOLD, border: '2px solid #0d0d0d',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', fontSize: '0.7rem',
+            }}>
+              📷
+              <input type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
+            </label>
+          </div>
+          <p style={{ color: '#555', fontSize: '0.76rem', margin: 0 }}>Click camera to change photo</p>
+        </div>
+
+        {/* Name */}
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', color: '#666', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: '7px' }}>Display Name</label>
+          <input value={name} onChange={e => setName(e.target.value)}
+            style={{
+              width: '100%', padding: '12px 14px', background: '#111',
+              border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px',
+              color: '#fff', fontSize: '0.9rem', fontFamily: 'inherit',
+              outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s',
+            }}
+            onFocus={e => e.target.style.borderColor = GOLD}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+          />
+        </div>
+
+        {/* Email (read-only) */}
+        <div style={{ marginBottom: '1.8rem' }}>
+          <label style={{ display: 'block', color: '#666', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: '7px' }}>Email</label>
+          <div style={{ padding: '12px 14px', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', color: '#555', fontSize: '0.9rem' }}>
+            {user?.email || '—'}
+          </div>
+        </div>
+
+        {/* Role badge */}
+        <div style={{ marginBottom: '1.8rem' }}>
+          <span style={{
+            background: user?.role === 'admin' ? 'rgba(212,175,55,0.1)' : 'rgba(48,209,88,0.1)',
+            color: user?.role === 'admin' ? GOLD : '#30D158',
+            border: `1px solid ${user?.role === 'admin' ? 'rgba(212,175,55,0.25)' : 'rgba(48,209,88,0.25)'}`,
+            borderRadius: '20px', padding: '4px 14px', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px',
+          }}>
+            {user?.role || 'user'}
+          </span>
+        </div>
+
+        <button onClick={save} disabled={saving || saved} style={{
+          width: '100%', padding: '13px',
+          background: saved ? 'rgba(48,209,88,0.15)' : GOLD,
+          color: saved ? '#30D158' : '#000',
+          border: saved ? '1px solid rgba(48,209,88,0.3)' : 'none',
+          borderRadius: '10px', fontWeight: 700, fontSize: '0.92rem',
+          cursor: saving || saved ? 'default' : 'pointer', fontFamily: 'inherit',
+          transition: 'all 0.3s',
+        }}>
+          {saved ? '✓ Saved!' : saving ? 'Saving...' : 'Save Changes'}
+        </button>
+      </div>
+    </div>
+  );
+}

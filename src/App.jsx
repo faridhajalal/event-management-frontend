@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
 import MainLayout from "./layouts/MainLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Home from "./pages/Home";
@@ -74,7 +75,6 @@ function App() {
         } />
       </Routes>
 
-      {/* 🌸 Feedback Chatbot - shows on ALL pages when logged in */}
       {token && <FeedbackChatbot />}
     </Router>
   );
